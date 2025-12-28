@@ -4,77 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Soreg.ai - הסטודיו לסריגה</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn6f2PC90ZXh0Pjwvc3ZnPg==">
+    <link rel="stylesheet" href="index.css">
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Assistant', 'sans-serif'],
-              display: ['Rubik', 'sans-serif'],
-            },
-            colors: {
-              wool: {
-                50: '#fdfbf7',
-                100: '#f7f3e8',
-                200: '#efe5cd',
-                300: '#e5d1a8',
-                400: '#dab67d',
-                500: '#d09b58',
-                600: '#c38043',
-                700: '#a26437',
-                800: '#855132',
-                900: '#6d432b',
-              },
-              sage: {
-                50: '#f4f7f4',
-                100: '#e3ebe3',
-                200: '#c5d8c5',
-                300: '#9dbf9d',
-                400: '#76a076',
-                500: '#578257',
-                600: '#436643',
-                700: '#375237',
-                800: '#2e412e',
-                900: '#263626',
-              }
-            }
-          }
-        }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="tailwind.config.js"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://aistudiocdn.com/react@^19.2.1/",
+        "react": "https://aistudiocdn.com/react@^19.2.1",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+        "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
       }
+    }
     </script>
-    <style>
-      body {
-        background-color: #fdfbf7;
-      }
-      /* Custom Scrollbar for a polished look */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f7f3e8; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #d09b58; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #c38043; 
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
-  }
-}
-</script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
   </body>

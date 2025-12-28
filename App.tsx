@@ -1,110 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PatternGenerator } from './components/PatternGenerator';
-import { ChatGuru } from './components/ChatGuru';
-import { BookOpen, MessageCircle, Menu, X, Heart } from 'lucide-react';
+import { PatternCard } from './components/PatternCard';
+import { BookOpen, Bookmark, Heart, PlusCircle } from 'lucide-react';
+import { GeneratedPattern } from './types';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'generator' | 'chat'>('generator');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showChatModal, setShowChatModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'create' | 'saved'>('create');
+  const [savedPatterns, setSavedPatterns] = useState<(GeneratedPattern & { id: number })[]>([]);
+
+  useEffect(() => {
+    const loaded = JSON.parse(localStorage.getItem('soreg_saved_patterns') || '[]');
+    setSavedPatterns(loaded);
+  }, [activeTab]);
+
+  const handleDelete = (id: number) => {
+    const updated = savedPatterns.filter(p => p.id !== id);
+    localStorage.setItem('soreg_saved_patterns', JSON.stringify(updated));
+    setSavedPatterns(updated);
+  };
 
   return (
-    <div className="min-h-screen bg-[#fdfbf7] text-stone-800 font-sans flex flex-col">
-      
-      {/* Navigation */}
-      <nav className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20">
-            <div className="flex items-center gap-3">
-               <div className="w-10 h-10 bg-wool-600 rounded-lg flex items-center justify-center text-white">
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h20"/><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="m19.07 4.93-14.14 14.14"/></svg>
-               </div>
-               <div>
-                 <h1 className="text-2xl font-display font-bold text-wool-900 tracking-tight">Soreg.ai</h1>
-                 <p className="text-xs text-stone-500 hidden sm:block">הסטודיו לסריגה עם בינה מלאכותית</p>
-               </div>
+    <div className="min-h-screen bg-wool-50 text-stone-800 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-wool-100 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-wool-600 rounded-2xl flex items-center justify-center text-white shadow-inner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h20"/><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="m19.07 4.93-14.14 14.14"/></svg>
             </div>
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-6">
-              <button 
-                onClick={() => setActiveTab('generator')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                  activeTab === 'generator' 
-                    ? 'bg-wool-100 text-wool-800 font-bold' 
-                    : 'text-stone-600 hover:bg-stone-50'
-                }`}
-              >
-                <BookOpen size={20} />
-                יצירת דוגמה
-              </button>
-              
-              <button 
-                onClick={() => setShowChatModal(!showChatModal)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-stone-600 hover:bg-stone-50 transition-all border border-transparent hover:border-stone-200"
-              >
-                <MessageCircle size={20} />
-                שאל את המומחה
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="flex items-center md:hidden">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-stone-600">
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
+            <h1 className="text-2xl font-display font-bold text-wool-900 tracking-tight">Soreg.ai</h1>
           </div>
+
+          <nav className="flex gap-1 bg-stone-100 p-1 rounded-2xl">
+            <button 
+              onClick={() => setActiveTab('create')}
+              className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'create' ? 'bg-white shadow-sm text-wool-700' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+              <PlusCircle size={18} />
+              <span>יצירה</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('saved')}
+              className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'saved' ? 'bg-white shadow-sm text-wool-700' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+              <Bookmark size={18} />
+              <span>שמורים</span>
+              {savedPatterns.length > 0 && (
+                <span className="bg-wool-100 text-wool-700 px-1.5 py-0.5 rounded-full text-[10px]">{savedPatterns.length}</span>
+              )}
+            </button>
+          </nav>
         </div>
-
-        {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-stone-100 p-4 space-y-2 shadow-lg absolute w-full z-50">
-            <button 
-              onClick={() => { setActiveTab('generator'); setMobileMenuOpen(false); }}
-              className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg ${
-                activeTab === 'generator' ? 'bg-wool-50 text-wool-900 font-bold' : 'text-stone-600'
-              }`}
-            >
-              <BookOpen size={20} />
-              יצירת דוגמה
-            </button>
-            <button 
-              onClick={() => { setShowChatModal(true); setMobileMenuOpen(false); }}
-              className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-50"
-            >
-              <MessageCircle size={20} />
-              שאל את המומחה
-            </button>
-          </div>
-        )}
-      </nav>
+      </header>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full relative">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
-          {/* Center / Left Panel: Generator (Takes full width usually, or reduced if chat is embedded) */}
-          <div className="lg:col-span-12">
-            <PatternGenerator />
+      <main className="flex-1 max-w-6xl mx-auto px-6 py-12 w-full">
+        {activeTab === 'create' ? (
+          <PatternGenerator />
+        ) : (
+          <div className="space-y-10 animate-fade-in">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-display font-bold text-wool-900">הדוגמאות שלי</h2>
+              <p className="text-stone-500">כל הדוגמאות ששמרת לגישה מהירה</p>
+            </div>
+            
+            {savedPatterns.length > 0 ? (
+              <div className="grid grid-cols-1 gap-12">
+                {savedPatterns.map((pattern) => (
+                  <PatternCard key={pattern.id} pattern={pattern} onDelete={handleDelete} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-wool-200">
+                <div className="w-16 h-16 bg-wool-50 rounded-full flex items-center justify-center mx-auto mb-4 text-wool-300">
+                  <BookOpen size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-stone-700">אין עדיין דוגמאות שמורות</h3>
+                <p className="text-stone-500 mb-8">התחילי ליצור דוגמאות חדשות ושמרי אותן כאן</p>
+                <button onClick={() => setActiveTab('create')} className="btn-primary inline-flex">
+                  צרי דוגמה עכשיו
+                </button>
+              </div>
+            )}
           </div>
-
-        </div>
+        )}
       </main>
 
-      {/* Floating Chat Guru Modal / Widget */}
-      {showChatModal && (
-        <div className="fixed bottom-0 left-0 md:left-8 md:bottom-8 z-50 w-full md:w-[400px] md:h-[600px] h-[80vh] shadow-2xl animate-fade-in-up">
-           <ChatGuru onClose={() => setShowChatModal(false)} isMobile={false} />
-        </div>
-      )}
-
       {/* Footer */}
-      <footer className="bg-white border-t border-stone-200 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between text-stone-500 text-sm">
-          <p>© 2024 Soreg.ai - כל הזכויות שמורות</p>
-          <div className="flex items-center gap-1 mt-2 md:mt-0">
-            נבנה באהבה <Heart size={14} className="text-red-400 fill-current" /> עבור סורגים בישראל
+      <footer className="bg-white border-t border-wool-100 py-10">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-stone-400 text-sm">
+          <p>© 2024 Soreg.ai - סטודיו לסריגה דיגיטלית</p>
+          <div className="flex items-center gap-1">
+            נבנה באהבה <Heart size={14} className="text-red-400 fill-current" /> עבור קהילת הסורגות
           </div>
         </div>
       </footer>
