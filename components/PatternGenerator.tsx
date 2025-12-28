@@ -44,25 +44,25 @@ export const PatternGenerator: React.FC = () => {
             <div className="space-y-2">
               <label className="text-sm font-bold text-stone-700">טכניקה</label>
               <div className="relative">
-                <select value={craft} onChange={(e) => setCraft(e.target.value as CraftType)} className="w-full appearance-none bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none">
+                <select value={craft} onChange={(e) => setCraft(e.target.value as CraftType)} className="w-full appearance-none bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none transition-all hover:border-stone-300">
                   <option value={CraftType.KNITTING}>שתי מסרגות</option>
                   <option value={CraftType.CROCHET}>מסרגה אחת (קרושה)</option>
                 </select>
-                <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-stone-700">פריט</label>
               <div className="relative">
-                <select value={item} onChange={(e) => setItem(e.target.value as ItemType)} className="w-full appearance-none bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none">
+                <select value={item} onChange={(e) => setItem(e.target.value as ItemType)} className="w-full appearance-none bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none transition-all hover:border-stone-300">
                   <option value={ItemType.SCARF}>צעיף</option>
                   <option value={ItemType.KIPPAH}>כיפה</option>
                   <option value={ItemType.BASKET}>סלסלת אחסון</option>
                   <option value={ItemType.BEANIE}>כובע</option>
                   <option value={ItemType.BLANKET}>שמיכה</option>
                 </select>
-                <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
               </div>
             </div>
 
@@ -70,7 +70,16 @@ export const PatternGenerator: React.FC = () => {
               <label className="text-sm font-bold text-stone-700">רמה</label>
               <div className="grid grid-cols-3 gap-2">
                 {[Difficulty.BEGINNER, Difficulty.INTERMEDIATE, Difficulty.ADVANCED].map((d) => (
-                  <button key={d} type="button" onClick={() => setDifficulty(d)} className={`py-2 text-sm font-bold rounded-lg border transition-all ${difficulty === d ? 'bg-wool-600 border-wool-600 text-white' : 'bg-stone-50 border-stone-200 text-stone-500 hover:border-wool-300'}`}>
+                  <button 
+                    key={d} 
+                    type="button" 
+                    onClick={() => setDifficulty(d)} 
+                    className={`py-2.5 text-sm font-bold rounded-xl border-2 transition-all duration-200 active:scale-95 ${
+                      difficulty === d 
+                        ? 'bg-wool-600 border-wool-600 text-white shadow-md' 
+                        : 'bg-white border-wool-100 text-wool-700 hover:border-wool-300 hover:bg-wool-50'
+                    }`}
+                  >
                     {d === Difficulty.BEGINNER ? 'מתחיל' : d === Difficulty.INTERMEDIATE ? 'בינוני' : 'מתקדם'}
                   </button>
                 ))}
@@ -79,17 +88,29 @@ export const PatternGenerator: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-stone-700">סוג צמר</label>
-              <input type="text" value={yarn} onChange={(e) => setYarn(e.target.value)} placeholder="למשל: צמר עבה, כותנה..." className="w-full bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none" />
+              <input 
+                type="text" 
+                value={yarn} 
+                onChange={(e) => setYarn(e.target.value)} 
+                placeholder="למשל: צמר עבה, כותנה..." 
+                className="w-full bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none transition-all hover:border-stone-300" 
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-bold text-stone-700">פרטים נוספים</label>
-            <textarea value={details} onChange={(e) => setDetails(e.target.value)} placeholder="הערות או בקשות מיוחדות..." rows={3} className="w-full bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none resize-none" />
+            <textarea 
+              value={details} 
+              onChange={(e) => setDetails(e.target.value)} 
+              placeholder="הערות או בקשות מיוחדות..." 
+              rows={3} 
+              className="w-full bg-stone-50 border border-stone-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-wool-400 outline-none resize-none transition-all hover:border-stone-300" 
+            />
           </div>
 
-          <button type="submit" disabled={loading} className="w-full btn-primary h-14">
-            {loading ? <Loader2 className="animate-spin" /> : <Wand2 />}
+          <button type="submit" disabled={loading} className="w-full btn-primary h-14 group">
+            {loading ? <Loader2 className="animate-spin" /> : <Wand2 className="transition-transform group-hover:rotate-12" />}
             <span>{loading ? 'מכין את ההוראות...' : 'צור דוגמה'}</span>
           </button>
         </form>
