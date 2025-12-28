@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { PatternGenerator } from './components/PatternGenerator';
 import { PatternCard } from './components/PatternCard';
-import { BookOpen, Bookmark, Heart, PlusCircle } from 'lucide-react';
+import { BookOpen, Bookmark, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
 import { GeneratedPattern } from './types';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'create' | 'saved'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'saved' | 'shared'>('create');
   const [savedPatterns, setSavedPatterns] = useState<(GeneratedPattern & { id: number })[]>([]);
+  const [sharedPattern, setSharedPattern] = useState<GeneratedPattern | null>(null);
 
   useEffect(() => {
+    // Check for shared patterns in URL
+    const params = new URLSearchParams(window.location.search);
+    const shareId = params.get('share');
+    if (shareId) {
+      const shares = JSON.parse(localStorage.getItem('soreg_shared_links') || '{}');
+      if (shares[shareId]) {
+        setSharedPattern(shares[shareId]);
+        setActiveTab('shared');
+      }
+    }
+
     const loaded = JSON.parse(localStorage.getItem('soreg_saved_patterns') || '[]');
     setSavedPatterns(loaded);
   }, [activeTab]);
@@ -17,6 +29,14 @@ const App: React.FC = () => {
     const updated = savedPatterns.filter(p => p.id !== id);
     localStorage.setItem('soreg_saved_patterns', JSON.stringify(updated));
     setSavedPatterns(updated);
+  };
+
+  const closeShared = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('share');
+    window.history.replaceState({}, '', url.toString());
+    setActiveTab('create');
+    setSharedPattern(null);
   };
 
   return (
@@ -33,14 +53,14 @@ const App: React.FC = () => {
 
           <nav className="flex gap-1 bg-stone-100 p-1 rounded-2xl">
             <button 
-              onClick={() => setActiveTab('create')}
+              onClick={() => { setActiveTab('create'); setSharedPattern(null); }}
               className={`flex items-center gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-bold transition-all ${activeTab === 'create' ? 'bg-white shadow-sm text-wool-700' : 'text-stone-500 hover:text-stone-700'}`}
             >
               <PlusCircle size={16} />
               <span>יצירה</span>
             </button>
             <button 
-              onClick={() => setActiveTab('saved')}
+              onClick={() => { setActiveTab('saved'); setSharedPattern(null); }}
               className={`flex items-center gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-bold transition-all ${activeTab === 'saved' ? 'bg-white shadow-sm text-wool-700' : 'text-stone-500 hover:text-stone-700'}`}
             >
               <Bookmark size={16} />
@@ -55,7 +75,22 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-12 w-full">
-        {activeTab === 'create' ? (
+        {activeTab === 'shared' && sharedPattern ? (
+          <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+            <button 
+              onClick={closeShared}
+              className="flex items-center gap-2 text-wool-600 font-bold hover:text-wool-700 transition-colors mb-4"
+            >
+              <ArrowLeft size={18} />
+              חזרה ליצירה
+            </button>
+            <div className="text-center mb-8">
+              <span className="inline-block px-3 py-1 bg-wool-100 text-wool-700 rounded-full text-xs font-bold mb-2">דוגמה משותפת</span>
+              <h2 className="text-3xl font-display font-bold text-wool-900">הוראות סריגה ששותפו איתך</h2>
+            </div>
+            <PatternCard pattern={sharedPattern} />
+          </div>
+        ) : activeTab === 'create' ? (
           <PatternGenerator />
         ) : (
           <div className="space-y-6 md:space-y-10 animate-fade-in">

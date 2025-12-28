@@ -8,9 +8,47 @@ interface PatternCardProps {
   isGridMode?: boolean;
 }
 
+// Fixed: Added style prop to StitchIcon component to resolve TypeScript error when passing style (animationDelay)
+const StitchIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="3" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+    style={style}
+  >
+    <path d="M7 8l5 5 5-5" />
+  </svg>
+);
+
+const StitchRow = ({ isAnimating }: { isAnimating: boolean }) => (
+  <div className="absolute top-2 left-0 right-0 flex justify-center gap-1 overflow-hidden px-4 pointer-events-none">
+    {[...Array(12)].map((_, i) => (
+      <StitchIcon 
+        key={i} 
+        className={`w-3 h-3 text-white transition-all duration-500 ${
+          isAnimating 
+            ? 'animate-stitch-dance text-yellow-200' 
+            : 'opacity-20 animate-stitch-pulse'
+        }`}
+        style={{ animationDelay: `${i * 0.1}s` }}
+      />
+    ))}
+  </div>
+);
+
 export const PatternCard: React.FC<PatternCardProps> = ({ pattern, onDelete, isGridMode }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [triggerStitchAnim, setTriggerStitchAnim] = useState(false);
+
+  const triggerAnimation = () => {
+    setTriggerStitchAnim(true);
+    setTimeout(() => setTriggerStitchAnim(false), 1000);
+  };
 
   const handleSave = () => {
     try {
@@ -26,6 +64,7 @@ export const PatternCard: React.FC<PatternCardProps> = ({ pattern, onDelete, isG
       }
       
       setIsSaved(true);
+      triggerAnimation();
       setTimeout(() => setIsSaved(false), 2000);
     } catch (error) {
       console.error("Failed to save", error);
@@ -33,23 +72,36 @@ export const PatternCard: React.FC<PatternCardProps> = ({ pattern, onDelete, isG
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: pattern.title,
-      text: `הכנתי דוגמת סריגה חדשה ב-Soreg.ai: ${pattern.title}`,
-      url: window.location.href,
-    };
+    const shareId = Math.random().toString(36).substring(2, 11);
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${shareId}`;
 
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.log('Share cancelled or failed');
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href).then(() => {
+    try {
+      const existingShares = JSON.parse(localStorage.getItem('soreg_shared_links') || '{}');
+      existingShares[shareId] = {
+        ...pattern,
+        sharedAt: new Date().toISOString()
+      };
+      localStorage.setItem('soreg_shared_links', JSON.stringify(existingShares));
+
+      if (navigator.share) {
+        await navigator.share({
+          title: `Soreg.ai: ${pattern.title}`,
+          text: `תראו את דוגמת הסריגה הזו שיצרתי!`,
+          url: shareUrl,
+        });
+        triggerAnimation();
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
         setIsCopied(true);
+        triggerAnimation();
         setTimeout(() => setIsCopied(false), 2000);
-      });
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+      await navigator.clipboard.writeText(shareUrl);
+      setIsCopied(true);
+      triggerAnimation();
+      setTimeout(() => setIsCopied(false), 2000);
     }
   };
 
@@ -57,6 +109,8 @@ export const PatternCard: React.FC<PatternCardProps> = ({ pattern, onDelete, isG
     <div className={`bg-white rounded-3xl shadow-lg overflow-hidden border border-wool-100 transition-all duration-300 hover:shadow-xl animate-fade-in-up flex flex-col h-full`}>
       {/* Header */}
       <div className={`bg-gradient-to-br from-wool-600 to-wool-700 ${isGridMode ? 'p-5 md:p-6' : 'p-6 md:p-10'} text-white relative shrink-0`}>
+        <StitchRow isAnimating={triggerStitchAnim} />
+        
         <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl pointer-events-none"></div>
         
         <div className="relative z-10 flex flex-col justify-between gap-4">
@@ -66,10 +120,11 @@ export const PatternCard: React.FC<PatternCardProps> = ({ pattern, onDelete, isG
             <div className="flex gap-2 shrink-0">
               <button 
                 onClick={handleShare}
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20"
-                title="שתף"
+                className={`p-2 rounded-lg transition-all border border-white/20 flex items-center gap-1 ${isCopied ? 'bg-green-500 border-green-400' : 'bg-white/10 hover:bg-white/20'}`}
+                title="שתף קישור"
               >
-                {isCopied ? <Check size={16} className="text-green-300" /> : <Share2 size={16} />}
+                {isCopied ? <Check size={16} /> : <Share2 size={16} />}
+                {isCopied && !isGridMode && <span className="text-xs font-bold">הועתק!</span>}
               </button>
               
               {!onDelete ? (
@@ -157,11 +212,6 @@ export const PatternCard: React.FC<PatternCardProps> = ({ pattern, onDelete, isG
                 </div>
               </div>
             ))}
-            {isGridMode && pattern.steps.length > 2 && (
-              <div className="text-center">
-                <button className="text-wool-600 text-xs font-bold hover:underline">הצג את כל השלבים</button>
-              </div>
-            )}
           </div>
         </div>
 

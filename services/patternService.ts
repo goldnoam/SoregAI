@@ -1,5 +1,7 @@
+import { GoogleGenAI, Type } from "@google/genai";
 import { CraftType, Difficulty, ItemType, GeneratedPattern } from "../types";
 
+// Replaced mock service with real Gemini API integration for generating professional patterns
 export const generatePattern = async (
   item: ItemType,
   craft: CraftType,
@@ -7,94 +9,66 @@ export const generatePattern = async (
   yarn: string,
   additionalDetails: string
 ): Promise<GeneratedPattern> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  // Simulate network delay for a consistent user experience
-  await new Promise(resolve => setTimeout(resolve, 800));
-
-  const craftHebrew = craft === CraftType.KNITTING ? "בשתי מסרגות" : "במסרגה אחת (קרושה)";
-  const difficultyHebrew = 
-    difficulty === Difficulty.BEGINNER ? "מתחילים" : 
-    difficulty === Difficulty.INTERMEDIATE ? "בינוני" : "מתקדם";
-
-  const getSteps = () => {
-    const baseSteps = [];
+  const prompt = `את/ה מומחה/ית לסריגה. צור/י הוראות סריגה מפורטות ומקצועיות עבור:
+    - פריט: ${item}
+    - טכניקה: ${craft === CraftType.KNITTING ? 'בשתי מסרגות' : 'במסרגה אחת (קרושה)'}
+    - רמת קושי: ${difficulty}
+    - סוג צמר: ${yarn || 'צמר סטנדרטי'}
+    - בקשות מיוחדות: ${additionalDetails || 'אין'}
     
-    baseSteps.push({
-      phase: "התחלה והכנות",
-      instructions: [
-        craft === CraftType.KNITTING 
-          ? `העלי ${difficulty === Difficulty.BEGINNER ? '25' : '40'} עיניים על מסרגות במידה המתאימה לחוט.` 
-          : `צרי לולאה ראשונית ושרשרת בסיס של ${difficulty === Difficulty.BEGINNER ? '25' : '40'} עיניים.`,
-        "סרגי את השורה הראשונה במתח רפוי כדי לשמור על גמישות השוליים."
-      ]
-    });
+    התשובה חייבת להיות בעברית ובפורמט JSON בלבד.`;
 
-    let bodyInstructions = [];
-    if (item === ItemType.SCARF) {
-      bodyInstructions = [
-        "המשיכי לסרוג ישר עד להגעה לאורך של 120-150 ס״מ.",
-        difficulty === Difficulty.BEGINNER ? "סרגי כל שורה בימין (Garter Stitch) למראה קלאסי." : "שלבי עיני ימין ושמאל ליצירת דוגמת פטנט (Ribbing).",
-        "הקפידי לשמור על מספר עיניים קבוע לאורך כל העבודה."
-      ];
-    } else if (item === ItemType.KIPPAH) {
-      bodyInstructions = [
-        "סרגי במעגלים תוך הוספת עיניים בכל שורה שנייה כדי לשמור על משטח שטוח.",
-        "כאשר מגיעים לקוטר של 10 ס״מ, הפסיקי את ההרחבות והמשיכי לסרוג ישר למראה עמוק יותר.",
-        "השתמשי בסימנייה כדי לדעת היכן מתחילה כל שורה."
-      ];
-    } else if (item === ItemType.BASKET) {
-      bodyInstructions = [
-        "סרגי עיגול בסיס קשיח (עדיף בחוט כפול).",
-        "כאשר הבסיס בגודל הרצוי, המשיכי לסרוג ללא הרחבות כלל ליצירת הדפנות.",
-        "בסיום הדפנות ניתן להוסיף שורת 'עין נסוגה' למראה דקורטיבי."
-      ];
-    } else {
-      bodyInstructions = [
-        "סרגי לפי המידות הרצויות תוך בדיקה מתמדת עם סרט מדידה.",
-        additionalDetails ? `דגש לבקשתך: ${additionalDetails}` : "הקפידי על מתח סריגה אחיד."
-      ];
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+    config: {
+      systemInstruction: "You are a world-class knitting and crochet instructor. Provide highly detailed, accurate, and creative patterns in Hebrew. Use professional terminology and return the output in a structured JSON format.",
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          description: { type: Type.STRING },
+          difficulty: { type: Type.STRING },
+          timeEstimate: { type: Type.STRING },
+          materials: { type: Type.ARRAY, items: { type: Type.STRING } },
+          tools: { type: Type.ARRAY, items: { type: Type.STRING } },
+          abbreviations: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                term: { type: Type.STRING },
+                explanation: { type: Type.STRING }
+              },
+              required: ["term", "explanation"]
+            }
+          },
+          steps: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                phase: { type: Type.STRING },
+                instructions: { type: Type.ARRAY, items: { type: Type.STRING } }
+              },
+              required: ["phase", "instructions"]
+            }
+          },
+          tips: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["title", "description", "difficulty", "timeEstimate", "materials", "tools", "abbreviations", "steps", "tips"]
+      }
     }
-    
-    baseSteps.push({
-      phase: "גוף הפרויקט",
-      instructions: bodyInstructions
-    });
+  });
 
-    baseSteps.push({
-      phase: "סגירה וגימור",
-      instructions: [
-        "סגרי את העיניים בצורה אחידה.",
-        "גזרי את החוט והשאירי זנב של 15 ס״מ.",
-        "השתמשי במחט צמר כדי להחביא את קצוות החוט בתוך הסריגה למראה מקצועי."
-      ]
-    });
-
-    return baseSteps;
-  };
-
-  return {
-    title: `${item === ItemType.SCARF ? "צעיף" : item === ItemType.VEST ? "אפודה" : item === ItemType.KIPPAH ? "כיפה" : "פרויקט"} ${craftHebrew}`,
-    description: `הוראות עבודה מפורטות ל${item} בדרגת קושי ${difficultyHebrew}.`,
-    difficulty: difficultyHebrew,
-    timeEstimate: item === ItemType.BLANKET ? "12-15 שעות" : "2-4 שעות",
-    materials: [
-      `חוט ${yarn || 'מתאים'} (כ-100 גרם)`,
-      "מספריים",
-      "מחט צמר"
-    ],
-    tools: [
-      craft === CraftType.KNITTING ? "מסרגות 4.5 מ״מ" : "מסרגה אחת 4 מ״מ",
-      "סרט מדידה"
-    ],
-    abbreviations: [
-      { term: "ע'", explanation: "עין" },
-      { term: "ש'", explanation: "שורה" }
-    ],
-    steps: getSteps(),
-    tips: [
-      "סריגת דוגמית היא שלב קריטי כדי לוודא שהגודל הסופי יהיה מדויק.",
-      "אל תחששי לפרום אם טעית - זו הדרך הטובה ביותר ללמוד.",
-      "שמרי על גב זקוף ותאורה טובה בזמן העבודה."
-    ]
-  };
+  const jsonStr = response.text.trim();
+  try {
+    return JSON.parse(jsonStr) as GeneratedPattern;
+  } catch (error) {
+    console.error("Failed to parse pattern JSON:", jsonStr);
+    throw new Error("חלה שגיאה ביצירת הדוגמה. אנא נסי שוב.");
+  }
 };
