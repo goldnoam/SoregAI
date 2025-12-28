@@ -8,8 +8,8 @@ interface PatternCardProps {
   isGridMode?: boolean;
 }
 
-// Fixed: Added style prop to StitchIcon component to resolve TypeScript error when passing style (animationDelay)
-const StitchIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+// Fixed: Added React.FC type to StitchIcon to resolve TypeScript error when passing 'key' prop in map()
+const StitchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => (
   <svg 
     viewBox="0 0 24 24" 
     fill="none" 
