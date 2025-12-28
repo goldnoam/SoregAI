@@ -30,12 +30,15 @@ export const PatternGenerator: React.FC = () => {
     setPattern(null);
 
     try {
+      // Now generating patterns locally without API calls
       const result = await generatePattern(item, craft, difficulty, yarn, details);
       setPattern(result);
-      // Wait for render then scroll
+      
       setTimeout(() => {
         document.getElementById('pattern-view')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -54,7 +57,7 @@ export const PatternGenerator: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-10">
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-5xl font-display font-bold text-wool-900">יצירת דוגמת סריגה</h1>
-        <p className="text-lg text-stone-600 max-w-xl mx-auto">בחרי את הפרמטרים וקבלי הוראות מדויקות לסריגה בשתי מסרגות או במסרגה אחת.</p>
+        <p className="text-lg text-stone-600 max-w-xl mx-auto">בחרי את הפרמטרים וקבלי הוראות מדויקות לסריגה. עובד גם ללא חיבור לאינטרנט!</p>
       </div>
 
       <div className="bg-white p-8 rounded-3xl shadow-lg border border-wool-50">
@@ -97,6 +100,7 @@ export const PatternGenerator: React.FC = () => {
                     <option value={ItemType.BASKET}>סלסלת אחסון</option>
                     <option value={ItemType.BEANIE}>כובע</option>
                     <option value={ItemType.BLANKET}>שמיכה</option>
+                    <option value={ItemType.VEST}>אפודה</option>
                   </select>
                   <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 text-wool-400 pointer-events-none" size={18} />
                 </div>
@@ -114,10 +118,10 @@ export const PatternGenerator: React.FC = () => {
                     <button 
                       type="button" 
                       onClick={() => setDifficulty(d)} 
-                      className={`w-full py-2.5 text-sm font-bold rounded-xl border-2 transition-all duration-200 active:scale-95 ${
+                      className={`w-full py-2.5 text-sm font-bold rounded-xl border-2 transition-all duration-300 active:scale-95 ${
                         difficulty === d 
-                          ? 'bg-wool-600 border-wool-600 text-white shadow-md' 
-                          : 'bg-wool-50/50 border-wool-100 text-wool-700 hover:border-wool-300 hover:bg-wool-100'
+                          ? 'bg-wool-600 border-wool-600 text-white shadow-md hover:bg-wool-700 hover:-translate-y-0.5' 
+                          : 'bg-wool-50/50 border-wool-100 text-wool-700 hover:border-wool-300 hover:bg-wool-100 hover:-translate-y-0.5 hover:shadow-sm'
                       }`}
                     >
                       {d === Difficulty.BEGINNER ? 'מתחיל' : d === Difficulty.INTERMEDIATE ? 'בינוני' : 'מתקדם'}
@@ -160,12 +164,10 @@ export const PatternGenerator: React.FC = () => {
             </Tooltip>
           </div>
 
-          <Tooltip text="הבינה המלאכותית תכין לך דף הוראות מלא תוך שניות" className="w-full">
-            <button type="submit" disabled={loading} className="w-full btn-primary h-14 group">
-              {loading ? <Loader2 className="animate-spin" /> : <Wand2 className="transition-transform group-hover:rotate-12" />}
-              <span>{loading ? 'מכין את ההוראות...' : 'צור דוגמה'}</span>
-            </button>
-          </Tooltip>
+          <button type="submit" disabled={loading} className="w-full btn-primary h-14 group shadow-wool-200/50 hover:shadow-wool-300/50">
+            {loading ? <Loader2 className="animate-spin" /> : <Wand2 className="transition-transform group-hover:rotate-12 group-hover:scale-110" />}
+            <span>{loading ? 'מכין את ההוראות...' : 'צור דוגמה'}</span>
+          </button>
         </form>
       </div>
 
